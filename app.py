@@ -1,12 +1,14 @@
-from flask import Flask
+from flask import Flask, render_template, request
 import threading
+from olwik import run_bot  # Import the bot function
 
 app = Flask(__name__)
 
-@app.route("/start-bot", methods=["POST"])
-def start_bot_endpoint():
-    threading.Thread(target=run_bot).start()
-    return {"status": "Bot started"}, 200
+@app.route("/")
+def index():
+    return render_template("index.html")
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+@app.route("/start", methods=["POST"])
+def start():
+    threading.Thread(target=run_bot).start()
+    return "Olwik started!"

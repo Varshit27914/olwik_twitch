@@ -1,7 +1,4 @@
 flask
-openai
-pvporcupine
-opencv-python
-requests
 irc
+requests
 openai

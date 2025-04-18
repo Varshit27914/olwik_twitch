@@ -130,6 +130,7 @@ def send_long_message(connection, channel, username, message):
 # --- Start Bot ---
 load_memory()
 
+# ✅ THIS FUNCTION is the one you expose to Flask:
 def run_bot():
     reactor = irc.client.Reactor()
     try:
@@ -142,9 +143,11 @@ def run_bot():
 
     conn.add_global_handler("welcome", on_connect)
     conn.add_global_handler("pubmsg", on_message)
+
+    # Optional: Log all IRC events (good for debugging)
     conn.add_global_handler("all_events", lambda c, e: print(f"[IRC DEBUG] {e.type}: {e.arguments}"))
 
     reactor.process_forever()
 
 # --- Run in Thread ---
-threading.Thread(target=run_bot).start()
+#threading.Thread(target=run_bot).start()

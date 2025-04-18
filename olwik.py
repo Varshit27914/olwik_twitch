@@ -1,12 +1,12 @@
 import irc.client
-import openai
 import threading
 import json
 import os
+from openai import OpenAI
 
-# --- Twitch Config (use environment variables on Render) ---
+# --- Twitch Config ---
 TWITCH_NICK = os.getenv("TWITCH_NICK", "olwik_ai")
-TWITCH_TOKEN = os.getenv("TWITCH_TOKEN")  # Format: oauth:xxxxx
+TWITCH_TOKEN = os.getenv("TWITCH_TOKEN")
 TWITCH_CHANNEL = os.getenv("TWITCH_CHANNEL", "#olwik_ai")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -35,11 +35,11 @@ def save_memory():
 
 last_response = ""
 
-# --- Ask Olwik (ChatGPT) ---
+# --- Ask Olwik (OpenAI v1.x style) ---
+client = OpenAI(api_key=OPENAI_API_KEY)
+
 def ask_olwik(user, message):
     global message_history, last_response
-
-    openai.api_key = OPENAI_API_KEY
 
     message_history.append({"role": "user", "content": f"{user} says: {message}"})
 
@@ -47,7 +47,7 @@ def ask_olwik(user, message):
         message_history = [message_history[0]] + message_history[-18:]
 
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=message_history
         )
@@ -130,7 +130,6 @@ def send_long_message(connection, channel, username, message):
 # --- Start Bot ---
 load_memory()
 
-# ✅ THIS FUNCTION is the one you expose to Flask:
 def run_bot():
     reactor = irc.client.Reactor()
     try:
@@ -143,11 +142,8 @@ def run_bot():
 
     conn.add_global_handler("welcome", on_connect)
     conn.add_global_handler("pubmsg", on_message)
-
-    # Optional: Log all IRC events (good for debugging)
     conn.add_global_handler("all_events", lambda c, e: print(f"[IRC DEBUG] {e.type}: {e.arguments}"))
 
     reactor.process_forever()
 
-# --- Run in Thread ---
-#threading.Thread(target=run_bot).start()
+# Don't auto-start here; let Flask trigger run_bot()

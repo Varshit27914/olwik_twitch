@@ -1,44 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Olwik Twitch Bot</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #1e1e1e;
-      color: white;
-      text-align: center;
-      padding-top: 100px;
-    }
-    button {
-      background-color: #9146FF;
-      color: white;
-      border: none;
-      padding: 15px 30px;
-      font-size: 18px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-  </style>
+    <title>Olwik Bot Controller</title>
 </head>
 <body>
-  <h1>🧠 Olwik Twitch Bot</h1>
-  <button onclick="startBot()">Start Bot</button>
-  <p id="status"></p>
+    <h1>Olwik is chillin' 😎</h1>
+    <button onclick="startOlwik()">Start Olwik Bot</button>
 
-  <script>
-    async function startBot() {
-      document.getElementById("status").innerText = "Starting...";
-      try {
-        const res = await fetch("/start-bot", { method: "POST" });
-        const data = await res.json();
-        document.getElementById("status").innerText = data.status;
-      } catch (err) {
-        document.getElementById("status").innerText = "Error starting bot.";
-        console.error(err);
-      }
-    }
-  </script>
+    <script>
+        function startOlwik() {
+            fetch("/start", { method: "POST" })
+                .then(res => res.text())
+                .then(msg => alert(msg))
+                .catch(err => alert("Error: " + err));
+        }
+    </script>
 </body>
 </html>

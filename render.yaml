@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: olwik-twitch-bot
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python flask.py
+    envVars:
+      - key: OPENAI_API_KEY
+        value: your-openai-api-key-here
+      - key: TWITCH_TOKEN
+        value: your-twitch-oauth-token-here

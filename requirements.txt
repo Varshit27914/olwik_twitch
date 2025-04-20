@@ -2,3 +2,4 @@ flask
 irc
 requests
 openai
+flask-cors

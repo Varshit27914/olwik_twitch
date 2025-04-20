@@ -47,6 +47,7 @@ def activate_olwik():
 @app.route("/ask", methods=["POST", "OPTIONS"])
 @cross_origin(origin='*', headers=['Content-Type'])  # Enable cross-origin for frontend
 def ask():
+    @cross_origin(origin='*', headers=['Content-Type'])  # Enable cross-origin for frontend
     if request.method == "OPTIONS":
         return jsonify({'status': 'CORS preflight successful'}), 200
 

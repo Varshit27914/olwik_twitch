@@ -1,9 +1,24 @@
-from flask import Flask, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string
 import threading
-import olwik  # This must be the file name (twitch_bot.py) with your bot code
+import olwik
+from flask_cors import CORS
+import os
+from openai import OpenAI
 
 app = Flask(__name__)
-bot_running = False  # Prevent multiple activations
+CORS(app)
+
+bot_running = False
+
+# Load OpenAI API key from environment variable
+openai_key = os.environ.get("OPENAI_API_KEY")
+if not openai_key:
+    raise ValueError("OPENAI_API_KEY environment variable not set")
+
+client = OpenAI(api_key=openai_key)
+
+# Shared memory for conversation
+messages = [{"role": "system", "content": "You're a friendly assistant who helps users understand ParkzIN."}]
 
 @app.route('/')
 def home():
@@ -35,6 +50,25 @@ def activate_olwik():
         return jsonify({'status': 'Olwik is now live on Twitch!'})
     else:
         return jsonify({'status': 'Olwik is already running!'})
+
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_input = request.json.get("message")
+    if not user_input:
+        return jsonify({"response": "No message received"}), 400
+
+    messages.append({"role": "user", "content": user_input})
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o",
+            messages=messages
+        )
+        response = completion.choices[0].message.content
+        messages.append({"role": "assistant", "content": response})
+        return jsonify({"response": response})
+    except Exception as e:
+        return jsonify({"response": f"Error: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

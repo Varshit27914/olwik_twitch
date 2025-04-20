@@ -52,28 +52,30 @@ def activate_olwik():
     else:
         return jsonify({'status': 'Olwik is already running!'})
 
-@app.route("/ask", methods=["POST", "OPTIONS"])
+messages = [{"role": "system", "content": "You're a helpful assistant."}]
+
+@app.route("/ask", methods=["POST"])
 def ask():
-    if request.method == "OPTIONS":
-        # Preflight CORS request
-        return '', 204
-
-    data = request.get_json()
-    user_msg = data.get("message")
-
-    if not user_msg:
-        return jsonify({"error": "No message provided"}), 400
-
-    messages.append({"role": "user", "content": user_msg})
-
     try:
+        data = request.get_json()
+        user_msg = data.get("message")
+
+        if not user_msg:
+            return jsonify({"error": "No message provided"}), 400
+
+        messages.append({"role": "user", "content": user_msg})
+
+        # Call OpenAI API
         completion = client.chat.completions.create(
-            model="gpt-4o",  # You can change this to your desired model
+            model="gpt-4o",  # You can change this to "gpt-3.5-turbo" if needed
             messages=messages
         )
+
         response = completion.choices[0].message.content
         messages.append({"role": "assistant", "content": response})
+
         return jsonify({"response": response})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

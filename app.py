@@ -45,11 +45,22 @@ def activate_olwik():
     else:
         return jsonify({'status': 'Olwik is already running!'})
 
-@app.route("/ask", methods=["POST", "OPTIONS"])
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
+
+messages = []  # Ensure this is defined somewhere globally
+
+@app.route("/ask", methods=["POST", "OPTIONS", "GET"])
 def ask():
     if request.method == "OPTIONS":
         # CORS preflight response
         return jsonify({'status': 'CORS preflight successful'}), 200
+
+    if request.method == "GET":
+        return jsonify({"error": "GET method not supported. Please use POST."}), 405
 
     data = request.get_json()
     user_msg = data.get("message")
@@ -72,3 +83,4 @@ def ask():
 
 if __name__ == '__main__':
     app.run(debug=True)
+

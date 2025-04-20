@@ -4,12 +4,12 @@ import threading
 import olwik  # your Twitch bot module
 import os
 from openai import OpenAI
-
+from flask_cors import cross_origin
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, origins="*")  # OR: use specific origin like "http://localhost:5500"
+CORS(app, resources={r"/*": {"origins": "*"}}) 
 
 messages = []
 # Initialize OpenAI
@@ -56,7 +56,8 @@ CORS(app)  # Enable CORS for all routes
 messages = []  # Ensure this is defined somewhere globally
 
 
-@app.route("/ask", methods=["POST", "OPTIONS", "GET"])
+@app.route("/ask", methods=["POST", "OPTIONS"])
+@cross_origin(origins="*")  # or your specific frontend domain
 def ask():
     if request.method == "OPTIONS":
         response = jsonify({'status': 'CORS preflight successful'})

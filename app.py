@@ -8,8 +8,9 @@ from flask_cors import cross_origin
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
+
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}}) 
+CORS(app, origins=["http://localhost:5500"])  # Only allow from your frontend
 
 messages = []
 # Initialize OpenAI
@@ -57,23 +58,20 @@ messages = []  # Ensure this is defined somewhere globally
 
 
 @app.route("/ask", methods=["POST", "OPTIONS"])
-@cross_origin(origins="*")  # or your specific frontend domain
+@cross_origin(origin='localhost', headers=['Content-Type'])  # allow CORS here too
 def ask():
     if request.method == "OPTIONS":
-        response = jsonify({'status': 'CORS preflight successful'})
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
-        response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
-        return response, 200
-
-    if request.method == "GET":
-        return jsonify({"error": "GET method not supported. Please use POST."}), 405
+        return jsonify({'status': 'CORS preflight successful'}), 200
 
     data = request.get_json()
     user_msg = data.get("message")
 
     if not user_msg:
         return jsonify({"error": "No message provided"}), 400
+
+    # ... your LLM logic here ...
+    return jsonify({"response": "Hello from backend!"})
+
 
     messages.append({"role": "user", "content": user_msg})
 

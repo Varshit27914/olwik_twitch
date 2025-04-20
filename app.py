@@ -10,8 +10,9 @@ from flask_cors import CORS
 
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:5500"])  # Only allow from your frontend
+cors = CORS(app, resources={r'*':{'origins':'*'}}
 
+     
 messages = []
 # Initialize OpenAI
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))

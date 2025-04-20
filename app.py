@@ -8,7 +8,7 @@ from openai import OpenAI
 app = Flask(__name__)
 
 # Enable CORS for all domains and all routes
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+CORS(app)
 
 # Initialize OpenAI
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))

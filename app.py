@@ -5,33 +5,30 @@ import os
 from openai import OpenAI
 import olwik  # Your Twitch bot module
 
-# Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
 
-# Add manual CORS headers (important for Render)
-@app.after_request
-def add_cors_headers(response):
-    response.headers.add("Access-Control-Allow-Origin", "*")  # Or set to "http://localhost:5500"
-    response.headers.add("Access-Control-Allow-Headers", "Content-Type")
-    response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
-    return response
+# CORS: Allow all origins (or specify your frontend)
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 
-# Set up OpenAI client
+# OpenAI init
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 messages = [{"role": "system", "content": "You're a helpful assistant."}]
-
-# Flag to track bot running state
 bot_running = False
 
-# Home route for browser
+@app.after_request
+def apply_cors(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    return response
+
 @app.route('/')
 def home():
     return render_template_string("""
         <html>
         <head><title>Olwik Bot</title></head>
         <body>
-            <h2>Olwik Twitch Bot</h2>
+            <h2>Olwik Twitch Bot:</h2>
             <button id="activateBtn">Activate Olwik</button>
             <p id="status"></p>
             <script>
@@ -45,7 +42,6 @@ def home():
         </html>
     """)
 
-# Bot activation route
 @app.route('/activate-olwik', methods=['POST'])
 def activate_olwik():
     global bot_running
@@ -56,11 +52,10 @@ def activate_olwik():
     else:
         return jsonify({'status': 'Olwik is already running!'})
 
-# Main AI interaction route
 @app.route("/ask", methods=["POST", "OPTIONS"])
 def ask():
     if request.method == "OPTIONS":
-        # Preflight request
+        # Preflight CORS request
         return '', 204
 
     data = request.get_json()
@@ -73,16 +68,14 @@ def ask():
 
     try:
         completion = client.chat.completions.create(
-            model="gpt-4o",  # or gpt-4/gpt-3.5-turbo
+            model="gpt-4o",  # You can change this to your desired model
             messages=messages
         )
         response = completion.choices[0].message.content
         messages.append({"role": "assistant", "content": response})
-
         return jsonify({"response": response})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Run the Flask app
 if __name__ == '__main__':
     app.run(debug=True)

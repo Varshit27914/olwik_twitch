@@ -67,7 +67,7 @@ def ask():
 
         # Call OpenAI API
         completion = client.chat.completions.create(
-            model="gpt-4o",  # You can change this to "gpt-3.5-turbo" if needed
+            model="gpt-4o",  # or "gpt-3.5-turbo"
             messages=messages
         )
 
@@ -77,7 +77,9 @@ def ask():
         return jsonify({"response": response})
 
     except Exception as e:
+        print("🔥 ERROR in /ask route:", str(e))  # Print error to console
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     import os

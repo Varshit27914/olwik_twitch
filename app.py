@@ -61,7 +61,7 @@ def ask():
 
     try:
         completion = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4o-mini",
             messages=messages
         )
         response = completion.choices[0].message.content

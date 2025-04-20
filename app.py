@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template_string
 import threading
-import olwik
+import olwik  # your Twitch bot module
 from flask_cors import CORS
 import os
 from openai import OpenAI
@@ -8,17 +8,10 @@ from openai import OpenAI
 app = Flask(__name__)
 CORS(app)
 
+# Initialize OpenAI
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+messages = [{"role": "system", "content": "You're a helpful assistant."}]
 bot_running = False
-
-# Load OpenAI API key from environment variable
-openai_key = os.environ.get("OPENAI_API_KEY")
-if not openai_key:
-    raise ValueError("OPENAI_API_KEY environment variable not set")
-
-client = OpenAI(api_key=openai_key)
-
-# Shared memory for conversation
-messages = [{"role": "system", "content": "You're a friendly assistant who helps users understand ParkzIN."}]
 
 @app.route('/')
 def home():
@@ -29,7 +22,6 @@ def home():
             <h2>Olwik Twitch Bot</h2>
             <button id="activateBtn">Activate Olwik</button>
             <p id="status"></p>
-
             <script>
             document.getElementById('activateBtn').addEventListener('click', async () => {
                 const res = await fetch('/activate-olwik', { method: 'POST' });
@@ -53,22 +45,25 @@ def activate_olwik():
 
 @app.route('/ask', methods=['POST'])
 def ask():
-    user_input = request.json.get("message")
+    print("🔥 /ask endpoint hit!")  # For debugging in Render logs
+    data = request.json
+    user_input = data.get("message", "")
+    
     if not user_input:
-        return jsonify({"response": "No message received"}), 400
+        return jsonify({"error": "Message is required"}), 400
 
     messages.append({"role": "user", "content": user_input})
 
     try:
         completion = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=messages
         )
         response = completion.choices[0].message.content
         messages.append({"role": "assistant", "content": response})
         return jsonify({"response": response})
     except Exception as e:
-        return jsonify({"response": f"Error: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

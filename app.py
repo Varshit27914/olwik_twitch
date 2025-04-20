@@ -1,25 +1,30 @@
 from flask import Flask, request, jsonify, render_template_string
+from flask_cors import CORS
 import threading
-import olwik
 import os
 from openai import OpenAI
-from flask_cors import CORS
+import olwik  # Your Twitch bot module
 
+# Initialize Flask app
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:5500"])
+CORS(app)  # Enable CORS for all routes
 
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-
-messages = [{"role": "system", "content": "You're a helpful assistant."}]
-bot_running = False
-
+# Add manual CORS headers (important for Render)
 @app.after_request
 def add_cors_headers(response):
-    response.headers.add("Access-Control-Allow-Origin", "http://localhost:5500")
+    response.headers.add("Access-Control-Allow-Origin", "*")  # Or set to "http://localhost:5500"
     response.headers.add("Access-Control-Allow-Headers", "Content-Type")
     response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
     return response
 
+# Set up OpenAI client
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+messages = [{"role": "system", "content": "You're a helpful assistant."}]
+
+# Flag to track bot running state
+bot_running = False
+
+# Home route for browser
 @app.route('/')
 def home():
     return render_template_string("""
@@ -40,6 +45,7 @@ def home():
         </html>
     """)
 
+# Bot activation route
 @app.route('/activate-olwik', methods=['POST'])
 def activate_olwik():
     global bot_running
@@ -50,10 +56,12 @@ def activate_olwik():
     else:
         return jsonify({'status': 'Olwik is already running!'})
 
+# Main AI interaction route
 @app.route("/ask", methods=["POST", "OPTIONS"])
 def ask():
     if request.method == "OPTIONS":
-        return '', 204  # Let @after_request handle the headers
+        # Preflight request
+        return '', 204
 
     data = request.get_json()
     user_msg = data.get("message")
@@ -65,14 +73,16 @@ def ask():
 
     try:
         completion = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",  # or gpt-4/gpt-3.5-turbo
             messages=messages
         )
         response = completion.choices[0].message.content
         messages.append({"role": "assistant", "content": response})
+
         return jsonify({"response": response})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# Run the Flask app
 if __name__ == '__main__':
     app.run(debug=True)

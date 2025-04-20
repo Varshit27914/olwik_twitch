@@ -67,7 +67,7 @@ def ask():
 
         # Call OpenAI API
         completion = client.chat.completions.create(
-            model="gpt-4o",  # or "gpt-3.5-turbo"
+            model="gpt-4o-mini",  # or "gpt-3.5-turbo"
             messages=messages
         )
 

@@ -1,14 +1,14 @@
 from flask import Flask, request, jsonify, render_template_string
+from flask_cors import CORS
 import threading
 import olwik  # your Twitch bot module
-from flask_cors import CORS
 import os
 from openai import OpenAI
 
 app = Flask(__name__)
-from flask_cors import CORS
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
+# Enable CORS for all domains and all routes
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # Initialize OpenAI
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
@@ -45,8 +45,12 @@ def activate_olwik():
     else:
         return jsonify({'status': 'Olwik is already running!'})
 
-@app.route("/ask", methods=["POST"])
+@app.route("/ask", methods=["POST", "OPTIONS"])
 def ask():
+    if request.method == "OPTIONS":
+        # CORS preflight response
+        return jsonify({'status': 'CORS preflight successful'}), 200
+
     data = request.get_json()
     user_msg = data.get("message")
 
@@ -65,3 +69,6 @@ def ask():
         return jsonify({"response": response})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)

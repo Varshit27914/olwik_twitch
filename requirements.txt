@@ -3,3 +3,4 @@ irc
 requests
 openai
 flask-cors
+groq

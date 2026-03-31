@@ -6,7 +6,7 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: python flask.py
     envVars:
-      - key: OPENAI_API_KEY
-        value: your-openai-api-key-here
+      - key: GROQ_API_KEY
+        value: your-groq-api-key-here
       - key: TWITCH_TOKEN
         value: your-twitch-oauth-token-here
